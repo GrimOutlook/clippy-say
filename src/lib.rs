@@ -35,10 +35,10 @@ const TEXT_BUBBLE_TOP_RIGHT: &str = "⠿⢷⣦\n";
 const TEXT_BUBBLE_RIGHT_SIDE: &str = "  ⢸⣿\n";
 const TEXT_BUBBLE_BOTTOM_RIGHT: &str = "⣾⠟\n";
 const TEXT_BUBBLE_BOTTOM_SIDE: &str = "⣶";
-const TEXT_BUBBLE_BOTTOM_LEFT: &str = "   ⠙⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣶";
-const TEXT_BUBBLE_TAIL: &str = "⠀⠀⠀⢰⣿⠀⠀⠀⠀⠀⢀⣠⣾⠟⠋
-⠀⠀⣠⣿⠃⠀⢀⣠⣤⣾⠟⠋
-⠀⠀⢿⣷⡾⠿⠟⠛⠉
+const TEXT_BUBBLE_BOTTOM_LEFT: &str = "   ⠙⣿⡆       ⣴⣶";
+const TEXT_BUBBLE_TAIL: &str = "   ⢰⣿     ⢀⣠⣾⠟⠋
+  ⣠⣿⠃ ⢀⣠⣤⣾⠟⠋
+  ⢿⣷⡾⠿⠟⠛⠉
 ";
 
 pub fn clippy() -> String {
@@ -113,16 +113,19 @@ pub fn says(text: impl ToString) -> String {
 }
 
 fn top(text_width: usize) -> String {
-    let top_side = TEXT_BUBBLE_TOP_SIDE.repeat(text_width);
+    let top_side = TEXT_BUBBLE_TOP_SIDE.repeat(text_width + 2);
     format!("{TEXT_BUBBLE_TOP_LEFT}{top_side}{TEXT_BUBBLE_TOP_RIGHT}")
 }
 
 fn bottom(text_width: usize) -> String {
     let speech_bubble_width =
         TEXT_BUBBLE_LEFT_SIDE.len() + text_width + TEXT_BUBBLE_RIGHT_SIDE.len();
+    println!("{}", TEXT_BUBBLE_BOTTOM_LEFT.len());
+    println!("{}", TEXT_BUBBLE_BOTTOM_RIGHT.len());
     let bottom_sides_needed = speech_bubble_width
-        .saturating_sub(longest_line_size(TEXT_BUBBLE_BOTTOM_LEFT))
-        .saturating_sub(TEXT_BUBBLE_BOTTOM_RIGHT.len());
+        .saturating_sub(TEXT_BUBBLE_BOTTOM_LEFT.len() + TEXT_BUBBLE_BOTTOM_RIGHT.len())
+        // TODO: Figure out why we need to add 6. This is a magic number even to the creator.
+        + 6;
 
     let bottom_side = TEXT_BUBBLE_BOTTOM_SIDE.repeat(bottom_sides_needed);
     format!("{TEXT_BUBBLE_BOTTOM_LEFT}{bottom_side}{TEXT_BUBBLE_BOTTOM_RIGHT}{TEXT_BUBBLE_TAIL}")
@@ -135,7 +138,7 @@ fn speech_line(text: &str, text_width: usize) -> String {
 }
 
 fn empty_line(text_width: usize) -> String {
-    speech_line("", text_width)
+    speech_line("", text_width + 1)
 }
 
 fn longest_line_size(text: &str) -> usize {
@@ -166,22 +169,38 @@ mod test {
 
     #[test]
     fn speech_bubble() {
-        let text = "This is a test message";
+        let text = "This is a test message on it's own";
         let expected = format!(
-            "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
-   ⣿⡇                         ⢸⣿
+            "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
+   ⣿⡇                                      ⢸⣿
    ⣿⡇  {text}  ⢸⣿
-   ⣿⡇                         ⢸⣿
-   ⠙⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣾⠟
-⠀⠀⠀⢰⣿⠀⠀⠀⠀⠀⢀⣠⣾⠟⠋
-⠀⠀⣠⣿⠃⠀⢀⣠⣤⣾⠟⠋
-⠀⠀⢿⣷⡾⠿⠟⠛⠉⠀⠀⠀⠀⠀⠀⠀
+   ⣿⡇                                      ⢸⣿
+   ⠙⣿⡆       ⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣾⠟
+   ⢰⣿     ⢀⣠⣾⠟⠋
+  ⣠⣿⠃ ⢀⣠⣤⣾⠟⠋
+  ⢿⣷⡾⠿⠟⠛⠉
 "
         );
         let actual = says(text);
 
-        println!("{expected}");
-        println!("{actual}");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn clippy_says() {
+        let text = "This is a test message on it's own";
+        let expected = format!(
+            "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
+   ⣿⡇                                      ⢸⣿
+   ⣿⡇  {text}  ⢸⣿
+   ⣿⡇                                      ⢸⣿
+   ⠙⣿⡆       ⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣾⠟
+   ⢰⣿     ⢀⣠⣾⠟⠋
+  ⣠⣿⠃ ⢀⣠⣤⣾⠟⠋
+  ⢿⣷⡾⠿⠟⠛⠉
+"
+        );
+        let actual = says(text);
 
         assert_eq!(expected, actual)
     }
