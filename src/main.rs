@@ -2,11 +2,16 @@
 compile_error!("This binary crate requires `--features cli`.");
 
 use clap::{Args, Parser};
-use clippy_says::clippy_says;
+use clippy_say::clippy_say;
 
 fn main() {
     let args = CmdLine::parse();
-    let clippy_says = clippy_says(args.text);
+    let text = if args.no_escapes {
+        args.text
+    } else {
+        args.text.replace("\\n", "\n")
+    };
+    let clippy_says = clippy_say(text);
 
     if args.output.stderr {
         eprintln!("{}", clippy_says)
@@ -20,6 +25,14 @@ fn main() {
 struct CmdLine {
     #[arg(help = "What clippy will say")]
     text: String,
+
+    #[arg(
+        short = 'n',
+        long,
+        help = "Don't parse escape sequences that get passed in",
+        default_value_t = false
+    )]
+    no_escapes: bool,
 
     #[command(flatten)]
     output: Output,
