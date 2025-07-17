@@ -1,21 +1,22 @@
 [package]
-name = "clippy-says"
-version = "0.1.0"
+name = "clippy-say"
+version = "1.0.0"
 edition = "2024"
 authors = ["Dominic Grimaldi <dominic.j.grimaldi@gmail.com>"]
 description = "Print ASCII art of Clippy to your terminal"
-repository = "https://github.com/GrimOutlook/clippy-says"
+repository = "https://github.com/GrimOutlook/clippy-say"
 license = "MIT"
 keywords = ["clippy", "terminal", "customization", "fortune", "cli"]
 categories = ["command-line-utilities", "value-formatting", "games"]
 
 [lib]
-name = "clippy_says"
+name = "clippy_say"
 path = "src/lib.rs"
 
 [[bin]]
-name = "clippy-says"
+name = "clippy-say"
 path = "src/main.rs"
+required-features = ["cli"]
 
 [features]
 cli = ["dep:clap"]

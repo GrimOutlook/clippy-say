@@ -46,11 +46,11 @@ pub fn clippy() -> String {
     CLIPPY.to_string()
 }
 
-pub fn clippy_says(text: impl ToString) -> String {
+pub fn clippy_say(text: impl ToString) -> String {
     let mut clippy = CLIPPY.to_string();
 
     // Create the speech bubble
-    let speech_bubble = says(text);
+    let speech_bubble = say(text);
 
     // Get the heights of the two pieces of text to combine.
     let clippy_height = clippy.lines().count();
@@ -66,7 +66,7 @@ pub fn clippy_says(text: impl ToString) -> String {
     horizontal_stack(clippy, speech_bubble)
 }
 
-pub fn says(text: impl ToString) -> String {
+pub fn say(text: impl ToString) -> String {
     let minimum_text_width = TEXT_BUBBLE_BOTTOM_LEFT.width() + TEXT_BUBBLE_BOTTOM_RIGHT.width()
         - TEXT_BUBBLE_LEFT_SIDE.width()
         - TEXT_BUBBLE_RIGHT_SIDE.width();
@@ -160,7 +160,7 @@ fn horizontal_stack(str1: impl ToString, str2: impl ToString) -> String {
 
 #[cfg(test)]
 mod test {
-    use super::{clippy_says, horizontal_stack, longest_line_size, says};
+    use super::{clippy_say, horizontal_stack, longest_line_size, say};
     use test_case::test_case;
 
     #[test_case("hello", 5; "with 1 line")]
@@ -181,7 +181,7 @@ mod test {
     }
 
     #[test]
-    fn test_says_smol() {
+    fn test_say_smol() {
         let text = "smol";
         let expected = format!(
             "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
@@ -194,7 +194,7 @@ mod test {
   ⢿⣷⡾⠿⠟⠛⠉
 "
         );
-        let actual = says(text);
+        let actual = say(text);
 
         println!("{expected}");
         println!("{actual}");
@@ -203,7 +203,7 @@ mod test {
     }
 
     #[test]
-    fn test_says() {
+    fn test_say() {
         let text = "This is a test message on it's own";
         let expected = format!(
             "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
@@ -216,7 +216,7 @@ mod test {
   ⢿⣷⡾⠿⠟⠛⠉
 "
         );
-        let actual = says(text);
+        let actual = say(text);
 
         println!("{expected}");
         println!("{actual}");
@@ -225,9 +225,9 @@ mod test {
     }
 
     #[test]
-    fn test_clippy_says() {
+    fn test_clippy_say() {
         let text = "This is a test message on it's own";
-        let actual = clippy_says(text);
+        let actual = clippy_say(text);
         println!("{}", actual)
     }
 }
