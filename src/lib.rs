@@ -1,39 +1,40 @@
 use std::cmp::max;
 
 use itertools::Itertools;
+use unicode_width::UnicodeWidthStr;
 
 const CLIPPY: &str = "
-⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢠⣶⠟⣉⣤⣢⣄⡪⢝⢦⡀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⢰⡿⢁⣾⠟⠉⠉⠉⠹⣧⣃⢳⡀⠀⠀⠀
-⠀⠀⠀⢀⣀⣼⡏⣼⠃⠀⠀⠀⠀⠀⢹⣏⣸⡅⠀⠀⠀
-⠀⢀⣴⡿⠿⣿⠃⣿⠀⠀⠀⠀⠀⠀⣸⣷⣿⣶⣄⠀⠀
-⠠⠞⠁⠀⢠⣿⠌⣿⠀⠀⠀⠀⠀⠀⣿⡇⣿⠛⠛⠿⣄
-⠀⠀⢀⣠⠾⠿⠾⣷⡀⠀⠀⠀⡠⢶⠛⠹⠿⢶⣄⠀⠈
-⠀⢠⠋⠀⢀⣁⡀⠘⠙⣦⡀⠘⠈⠀⣠⣤⡀⠀⠻⣦⠀
-⠀⢀⠀⠀⢾⣿⣿⠀⠀⢘⣧⠇⡀⠘⢿⣿⠏⠀⠀⡿⠀
-⠀⠈⢧⡀⠈⣉⡁⠀⣤⡞⠀⠘⢢⣀⡄⠀⢠⣠⠾⠃⠀
-⠀⠀⠀⠉⣷⡖⣶⡛⠉⠀⠀⠀⠀⣿⡏⣿⠋⠁⠀⠀⠀
-⠀⠀⠀⠀⢻⡇⣽⢺⣱⡄⠀⠀⠀⣿⢇⡏⠀⠀⣰⡖⣦
-⠀⠀⠀⠀⣿⡇⣿⢻⠸⡇⠀⠀⠀⣿⢰⡏⢀⣾⢳⡾⠉
-⠀⠀⠀⠀⣿⡄⡿⣿⠘⡁⠀⠀⠐⣿⢸⡇⣾⢇⡿⠀⠀
-⠀⠀⠀⠀⣿⠐⣟⣧⢰⠀⠀⠀⢸⣿⢺⠆⣿⢸⡇⠀⠀
-⠀⠀⠀⠀⣿⠡⣟⣿⢸⡇⠀⠀⢸⣇⢿⠆⣿⢸⡅⠀⠀
-⠀⠀⠀⠀⣿⠡⣏⣿⡸⡅⠀⠀⣼⢏⣼⠆⣿⢸⠃⠀⠀
-⠀⠀⠀⠀⣿⠰⣿⠹⣶⣭⣖⣪⣵⡾⠏⢠⣿⢸⡁⠀⠀
-⠀⠀⠀⠀⣿⢂⡷⠀⠈⠉⠘⠉⠉⠀⠀⠸⣿⢼⡀⠀⠀
-⠀⠀⠀⠀⣿⡍⢿⡀⠀⠀⠀⠀⠀⠀⠀⣸⠇⣼⠀⠀⠀
-⠀⠀⠀⠀⠹⣯⡎⡻⢦⣀⣀⣀⣀⡤⠞⣉⣼⠃⠀⠀⠀
-⠀⠀⠀⠀⠀⠈⠻⢷⣦⣢⣬⣤⣤⣶⠾⠋⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀
+        ⢀⣀⣤⣤⣄⣀
+      ⢠⣶⠟⣉⣤⣢⣄⡪⢝⢦⡀
+     ⢰⡿⢁⣾⠟⠉⠉⠉⠹⣧⣃⢳⡀
+   ⢀⣀⣼⡏⣼⠃     ⢹⣏⣸⡅
+ ⢀⣴⡿⠿⣿⠃⣿      ⣸⣷⣿⣶⣄
+⠠⠞⠁ ⢠⣿⠌⣿      ⣿⡇⣿⠛⠛⠿⣄
+  ⢀⣠⠾⠿⠾⣷⡀   ⡠⢶⠛⠹⠿⢶⣄ ⠈
+ ⢠⠋ ⢀⣁⡀⠘⠙⣦⡀⠘⠈ ⣠⣤⡀ ⠻⣦
+ ⢀  ⢾⣿⣿  ⢘⣧⠇⡀⠘⢿⣿⠏  ⡿
+ ⠈⢧⡀⠈⣉⡁ ⣤⡞ ⠘⢢⣀⡄ ⢠⣠⠾⠃
+   ⠉⣷⡖⣶⡛⠉    ⣿⡏⣿⠋⠁
+    ⢻⡇⣽⢺⣱⡄   ⣿⢇⡏  ⣰⡖⣦
+    ⣿⡇⣿⢻⠸⡇   ⣿⢰⡏⢀⣾⢳⡾⠉
+    ⣿⡄⡿⣿⠘⡁  ⠐⣿⢸⡇⣾⢇⡿
+    ⣿⠐⣟⣧⢰   ⢸⣿⢺⠆⣿⢸⡇
+    ⣿⠡⣟⣿⢸⡇  ⢸⣇⢿⠆⣿⢸⡅
+    ⣿⠡⣏⣿⡸⡅  ⣼⢏⣼⠆⣿⢸⠃
+    ⣿⠰⣿⠹⣶⣭⣖⣪⣵⡾⠏⢠⣿⢸⡁
+    ⣿⢂⡷ ⠈⠉⠘⠉⠉  ⠸⣿⢼⡀
+    ⣿⡍⢿⡀       ⣸⠇⣼
+    ⠹⣯⡎⡻⢦⣀⣀⣀⣀⡤⠞⣉⣼⠃
+     ⠈⠻⢷⣦⣢⣬⣤⣤⣶⠾⠋
+         ⠉⠉⠉
 ";
 
 const TEXT_BUBBLE_LEFT_SIDE: &str = "   ⣿⡇  ";
 const TEXT_BUBBLE_TOP_LEFT: &str = "   ⣴⡾⠿";
 const TEXT_BUBBLE_TOP_SIDE: &str = "⠿";
-const TEXT_BUBBLE_TOP_RIGHT: &str = "⠿⢷⣦\n";
-const TEXT_BUBBLE_RIGHT_SIDE: &str = "  ⢸⣿\n";
-const TEXT_BUBBLE_BOTTOM_RIGHT: &str = "⣾⠟\n";
+const TEXT_BUBBLE_TOP_RIGHT: &str = "⠿⢷⣦";
+const TEXT_BUBBLE_RIGHT_SIDE: &str = "  ⢸⣿";
+const TEXT_BUBBLE_BOTTOM_RIGHT: &str = "⣾⠟";
 const TEXT_BUBBLE_BOTTOM_SIDE: &str = "⣶";
 const TEXT_BUBBLE_BOTTOM_LEFT: &str = "   ⠙⣿⡆       ⣴⣶";
 const TEXT_BUBBLE_TAIL: &str = "   ⢰⣿     ⢀⣠⣾⠟⠋
@@ -65,6 +66,68 @@ pub fn clippy_says(text: impl ToString) -> String {
     horizontal_stack(clippy, speech_bubble)
 }
 
+pub fn says(text: impl ToString) -> String {
+    let minimum_text_width = TEXT_BUBBLE_BOTTOM_LEFT.width() + TEXT_BUBBLE_BOTTOM_RIGHT.width()
+        - TEXT_BUBBLE_LEFT_SIDE.width()
+        - TEXT_BUBBLE_RIGHT_SIDE.width();
+
+    debug_assert_eq!(TEXT_BUBBLE_LEFT_SIDE.width(), 7);
+
+    let text = text.to_string();
+    // Get the length of the longest line
+    let mut full_width = longest_line_size(&text);
+    if full_width < minimum_text_width {
+        full_width = minimum_text_width
+    }
+
+    let mut output = String::new();
+    output.push_str(&top(full_width));
+    output.push_str(&empty_line(full_width));
+
+    for line in text.lines() {
+        output.push_str(&speech_line(line, full_width));
+    }
+    output.push_str(&empty_line(full_width));
+    output.push_str(&bottom(full_width));
+    output
+}
+
+fn top(text_width: usize) -> String {
+    let speech_bubble_width = speech_bubble_width(text_width);
+    let top_sides_needed = speech_bubble_width
+        .saturating_sub(TEXT_BUBBLE_TOP_LEFT.width() + TEXT_BUBBLE_TOP_RIGHT.width());
+
+    let top_side = TEXT_BUBBLE_TOP_SIDE.repeat(top_sides_needed);
+    format!("{TEXT_BUBBLE_TOP_LEFT}{top_side}{TEXT_BUBBLE_TOP_RIGHT}\n")
+}
+
+fn bottom(text_width: usize) -> String {
+    let speech_bubble_width = speech_bubble_width(text_width);
+    let bottom_sides_needed = speech_bubble_width
+        .saturating_sub(TEXT_BUBBLE_BOTTOM_LEFT.width() + TEXT_BUBBLE_BOTTOM_RIGHT.width());
+
+    let bottom_side = TEXT_BUBBLE_BOTTOM_SIDE.repeat(bottom_sides_needed);
+    format!("{TEXT_BUBBLE_BOTTOM_LEFT}{bottom_side}{TEXT_BUBBLE_BOTTOM_RIGHT}\n{TEXT_BUBBLE_TAIL}")
+}
+
+fn speech_line(text: &str, text_width: usize) -> String {
+    let mut padded_text = text.to_string();
+    padded_text.push_str(&" ".repeat(text_width.saturating_sub(padded_text.width())));
+    format!("{TEXT_BUBBLE_LEFT_SIDE}{padded_text}{TEXT_BUBBLE_RIGHT_SIDE}\n",)
+}
+
+fn empty_line(text_width: usize) -> String {
+    speech_line("", text_width)
+}
+
+fn longest_line_size(text: &str) -> usize {
+    text.lines().map(|s| s.width()).max().map_or(0, |v| v)
+}
+
+fn speech_bubble_width(text_width: usize) -> usize {
+    TEXT_BUBBLE_LEFT_SIDE.width() + text_width + TEXT_BUBBLE_RIGHT_SIDE.width()
+}
+
 fn horizontal_stack(str1: impl ToString, str2: impl ToString) -> String {
     // Split both strings in to columns from the contained newlines.
     let stack1: Vec<String> = str1.to_string().lines().map_into().collect_vec();
@@ -81,7 +144,7 @@ fn horizontal_stack(str1: impl ToString, str2: impl ToString) -> String {
         let stack2_str = stack2.get(i).map_or("", |v| v);
 
         // Get the number of spaces to add to the line
-        let spaces_to_add = stack1_longest_line_length - stack1_str.len();
+        let spaces_to_add = stack1_longest_line_length - stack1_str.width();
 
         // Create the output for this line
         output.push_str(stack1_str);
@@ -95,59 +158,9 @@ fn horizontal_stack(str1: impl ToString, str2: impl ToString) -> String {
     output
 }
 
-pub fn says(text: impl ToString) -> String {
-    let text = text.to_string();
-    // Get the length of the longest line
-    let full_width = longest_line_size(&text);
-
-    let mut output = String::new();
-    output.push_str(&top(full_width));
-    output.push_str(&empty_line(full_width));
-
-    for line in text.lines() {
-        output.push_str(&speech_line(line, full_width));
-    }
-    output.push_str(&empty_line(full_width));
-    output.push_str(&bottom(full_width));
-    output
-}
-
-fn top(text_width: usize) -> String {
-    let top_side = TEXT_BUBBLE_TOP_SIDE.repeat(text_width + 2);
-    format!("{TEXT_BUBBLE_TOP_LEFT}{top_side}{TEXT_BUBBLE_TOP_RIGHT}")
-}
-
-fn bottom(text_width: usize) -> String {
-    let speech_bubble_width =
-        TEXT_BUBBLE_LEFT_SIDE.len() + text_width + TEXT_BUBBLE_RIGHT_SIDE.len();
-    println!("{}", TEXT_BUBBLE_BOTTOM_LEFT.len());
-    println!("{}", TEXT_BUBBLE_BOTTOM_RIGHT.len());
-    let bottom_sides_needed = speech_bubble_width
-        .saturating_sub(TEXT_BUBBLE_BOTTOM_LEFT.len() + TEXT_BUBBLE_BOTTOM_RIGHT.len())
-        // TODO: Figure out why we need to add 6. This is a magic number even to the creator.
-        + 6;
-
-    let bottom_side = TEXT_BUBBLE_BOTTOM_SIDE.repeat(bottom_sides_needed);
-    format!("{TEXT_BUBBLE_BOTTOM_LEFT}{bottom_side}{TEXT_BUBBLE_BOTTOM_RIGHT}{TEXT_BUBBLE_TAIL}")
-}
-
-fn speech_line(text: &str, text_width: usize) -> String {
-    let mut padded_text = text.to_string();
-    padded_text.push_str(&" ".repeat(text_width.saturating_sub(padded_text.len() + 1)));
-    format!("{TEXT_BUBBLE_LEFT_SIDE}{padded_text}{TEXT_BUBBLE_RIGHT_SIDE}",)
-}
-
-fn empty_line(text_width: usize) -> String {
-    speech_line("", text_width + 1)
-}
-
-fn longest_line_size(text: &str) -> usize {
-    text.lines().map(|s| s.len()).max().map_or(0, |v| v)
-}
-
 #[cfg(test)]
 mod test {
-    use super::{horizontal_stack, longest_line_size, says};
+    use super::{clippy_says, horizontal_stack, longest_line_size, says};
     use test_case::test_case;
 
     #[test_case("hello", 5; "with 1 line")]
@@ -168,26 +181,29 @@ mod test {
     }
 
     #[test]
-    fn speech_bubble() {
-        let text = "This is a test message on it's own";
+    fn test_says_smol() {
+        let text = "smol";
         let expected = format!(
-            "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
-   ⣿⡇                                      ⢸⣿
-   ⣿⡇  {text}  ⢸⣿
-   ⣿⡇                                      ⢸⣿
-   ⠙⣿⡆       ⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣾⠟
+            "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
+   ⣿⡇          ⢸⣿
+   ⣿⡇  {text}    ⢸⣿
+   ⣿⡇          ⢸⣿
+   ⠙⣿⡆       ⣴⣶⣾⠟
    ⢰⣿     ⢀⣠⣾⠟⠋
   ⣠⣿⠃ ⢀⣠⣤⣾⠟⠋
   ⢿⣷⡾⠿⠟⠛⠉
 "
         );
         let actual = says(text);
+
+        println!("{expected}");
+        println!("{actual}");
 
         assert_eq!(expected, actual)
     }
 
     #[test]
-    fn clippy_says() {
+    fn test_says() {
         let text = "This is a test message on it's own";
         let expected = format!(
             "   ⣴⡾⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⢷⣦
@@ -202,6 +218,16 @@ mod test {
         );
         let actual = says(text);
 
+        println!("{expected}");
+        println!("{actual}");
+
         assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn test_clippy_says() {
+        let text = "This is a test message on it's own";
+        let actual = clippy_says(text);
+        println!("{}", actual)
     }
 }

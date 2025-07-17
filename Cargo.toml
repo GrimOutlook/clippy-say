@@ -2,9 +2,28 @@
 name = "clippy-says"
 version = "0.1.0"
 edition = "2024"
+authors = ["Dominic Grimaldi <dominic.j.grimaldi@gmail.com>"]
+description = "Print ASCII art of Clippy to your terminal"
+repository = "https://github.com/GrimOutlook/clippy-says"
+license = "MIT"
+keywords = ["clippy", "terminal", "customization", "fortune", "cli"]
+categories = ["command-line-utilities", "value-formatting", "games"]
+
+[lib]
+name = "clippy_says"
+path = "src/lib.rs"
+
+[[bin]]
+name = "clippy-says"
+path = "src/main.rs"
+
+[features]
+cli = ["dep:clap"]
 
 [dependencies]
+clap = { version = "4.5.41", features = ["derive"], optional = true }
 itertools = "0.14.0"
+unicode-width = "0.2.1"
 
 [dev-dependencies]
 test-case = "3.3.1"
